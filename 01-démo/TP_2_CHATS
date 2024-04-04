@@ -1,0 +1,78 @@
+
+--Créer la data base zoo
+CREATE DATABASE zoo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ;
+
+USE zoo ;
+
+--Créer la table chat
+CREATE TABLE chat(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(50) NOT NULL,
+    yeux VARCHAR(20) NOT NULL,
+    age INT(2) NOT NULL
+) ENGINE=InnoDB ;
+
+--Ajouter les données
+INSERT INTO chat (nom, yeux, age) VALUES
+    ("maine coon", "marron", 20),
+    ("suiamois", "bleu", 15),
+    ("bengal", "marron", 18),
+    ("scottish fold", "marron", 10);
+
+--Afficher le chat avec l'id :2
+SELECT * FROM chat
+WHERE id = 2;
+
+--Trier les chat par nom et par age
+SELECT * FROM chat
+ORDER BY nom, age ASC;
+
+--Afficher les chats qui vive entre 11 et 19 ans
+SELECT * FROM chat
+WHERE age BETWEEN 11 and 19;
+
+--Afficher le ou les chats dont le nom contient 'eng'
+SELECT * FROM chat 
+WHERE nom LIKE("%eng%") ;
+
+--Afficher la moyenne d'age des chats
+SELECT AVG(age) FROM chat ;
+
+--Afficher le nombre de chats dans la table
+SELECT COUNT(id) FROM chat;
+
+--Ajouter les données à partir d'un fichier excel
+
+-------------------------------------------------
+--TP_2_CHATS_2
+-------------------------------------------------
+CREATE DATABASE spa CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ;
+USE spa;
+
+CREATE TABLE couleur(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    yeux VARCHAR(20) NOT NULL
+) ENGINE=InnoDB ;
+
+CREATE TABLE chat(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(50) NOT NULL,
+    age INT(2) NOT NULL,
+    couleur_id, INT NOT NULL,
+    CONSTRAINT fk_couleur FOREIGN KEY (couleur_id) REFERENCES couleur(id)
+) ENGINE=InnoDB ;
+
+INSERT INTO couleur (id,yeux) VALUES
+    (1,"marron"),
+    (2,"bleu");
+
+INSERT INTO chat (nom, age, couleur_id) VALUES
+    ("maine coon", 20,1),
+    ("siamois", 15,2),
+    ("bengal", 18,1),
+    ("scottish fold", 10,1);
+
+--Afficher le nom du chat et la couleur des yeux
+SELECT nom, yeux FROM chat
+INNER JOIN couleur
+ON chat.couleur_id = couleur.id;

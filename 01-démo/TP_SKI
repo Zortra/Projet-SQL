@@ -1,0 +1,92 @@
+CREATE DATABASE ski 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE ski;
+
+CREATE TABLE clients (
+    noCli INT NOT NULL AUTO_INCREMENT,
+    nom VARCHAR(30) NOT NULL,
+    prenom VARCHAR(30) NULL,
+    adresse VARCHAR(120) NULL,
+    cpo VARCHAR(5) NOT NULL,
+    ville VARCHAR(80) NOT NULL,
+    PRIMARY KEY (noCli)
+) ENGINE=InnoDB;
+
+CREATE TABLE fiches (
+    noFic INT NOT NULL AUTO_INCREMENT,
+    noCli INT NOT NULL,
+    CONSTRAINT fk_client FOREIGN KEY (noCli) REFERENCES clients(noCli) ON DELETE RESTRICT,
+    dateCrea DATETIME NOT NULL,
+    datePaye DATETIME NULL,
+    etat ENUM("SO","EC","RE") NOT NULL,
+    PRIMARY KEY (noFic)
+) ENGINE=InnoDB;
+
+CREATE TABLE lignesfic (
+    noFic INT,
+    noLig INT NOT NULL AUTO_INCREMENT,
+    refart CHAR(8) NOT NULL,
+    depart DATETIME NOT NULL,
+    retour DATETIME NULL,
+    PRIMARY KEY (noFic, noLig)
+) ENGINE=InnoDB;
+
+CREATE TABLE articles(
+    refart INT NOT NULL AUTO_INCREMENT,
+    designation VARCHAR(80) NOT NULL,
+    codeGam CHAR(5) NULL,
+    codeCate CHAR(5) NULL,
+    PRIMARY KEY (refart)
+) ENGINE=InnoDB;
+
+CREATE TABLE gammes(
+    codeGam CHAR(5) NOT NULL AUTO_INCREMENT,
+    libelle VARCHAR(45) NOT NULL,
+    PRIMARY KEY (codeGam)
+) ENGINE=InnoDB;
+
+CREATE TABLE categories(
+    codeCate CHAR(5) NOT NULL,
+    libelle VARCHAR(30) NOT NULL,
+    PRIMARY KEY (codeCate)
+) ENGINE=InnoDB;
+
+CREATE TABLE tarifs(
+    codeTarif CHAR(5) NOT NULL,
+    libelle VARCHAR(30) NOT NULL,
+    prixjour DECIMAL(5) NOT NULL,
+    PRIMARY KEY (codeTarif)
+) ENGINE=InnoDB;
+
+CREATE TABLE grilletarifs(
+    codeGam CHAR(5) NOT NULL,
+    codeCate CHAR(5) NOT NULL,
+    codeTarif CHAR(5) NULL,
+    PRIMARY KEY (codeGam,codeCate)
+) ENGINE=InnoDB;
+
+ALTER TABLE lignesfic
+ADD FOREIGN KEY (noFic) 
+REFERENCES fiches(noFic)
+ON DELETE RESTRICT;
+
+ALTER TABLE lignesfic
+ADD FOREIGN KEY (refart) 
+REFERENCES articles(refart)
+ON DELETE RESTRICT;
+
+ALTER TABLE articles
+ADD FOREIGN KEY (codeGam) 
+REFERENCES grilletarifs(codeGam)
+ON DELETE RESTRICT;
+
+ALTER TABLE articles
+ADD FOREIGN KEY (codeCate) 
+REFERENCES grilletarifs(codeCate)
+ON DELETE RESTRICT;
+
+ALTER TABLE grilletarifs
+ADD FOREIGN KEY (codeTarif) 
+REFERENCES tarifs(codeTarif)
+ON DELETE RESTRICT;

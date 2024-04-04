@@ -1,0 +1,138 @@
+DROP DATABASE CRM;
+CREATE DATABASE CRM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE CRM;
+
+CREATE TABLE client(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE projet(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_client INT NOT NULL,
+    nom VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE devis(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    version INT NOT NULL,
+    reference VARCHAR(10),
+    prix FLOAT NOT NULL,
+    id_projet INT NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE facture(
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    reference VARCHAR(10) NOT NULL,
+    info VARCHAR(255) NOT NULL,
+    total FLOAT NOT NULL,
+    date_crea date NOT NULL,
+    date_paiement date,
+    id_devis INT NOT NULL
+) ENGINE=InnoDB;
+
+--On ajoute les clés étrangères
+--ALTER TABLE nom_table
+--ADD instructions
+--FOREIGN KEY (nom_colonne ) REFERENCES
+--table_ref(nom_colonne) ON DELETE CASCADE ;
+
+ALTER TABLE projet
+ADD FOREIGN KEY (id_client) 
+REFERENCES client (id) 
+ON DELETE CASCADE ;
+
+ALTER TABLE devis
+ADD FOREIGN KEY (id_projet) 
+REFERENCES projet (id) 
+ON DELETE CASCADE ;
+
+ALTER TABLE facture
+ADD FOREIGN KEY (id_devis) 
+REFERENCES devis (id) 
+ON DELETE CASCADE ;
+
+--On inserre les données
+DELETE FROM client;
+DELETE FROM projet;
+DELETE FROM devis;
+DELETE FROM facture;
+
+INSERT INTO client (nom) VALUES 
+	('Mairie de Rennes'),
+	('Neo Soft'),
+	('Sopra'),
+	('Accenture'),
+	('Amazon');
+
+INSERT INTO projet (nom, id_client) VALUES
+	('Création de site internet', 1),
+	('Creationde site internet', 1),
+	('Logiciel CRM', 2),
+	('Logiciel de devis', 3),
+	('Site internet e-commerce', 4),
+	('Logiciel ERP', 2),
+	('Logicielgestion de stock',4);
+
+    
+INSERT INTO devis (version,reference, prix, id_projet) VALUES
+	('1','DEV2100A', 3000, 1),
+	('2','DEV2100B', 5000, 2),
+	('1','DEV2100C', 5000, 3),
+	('1','DEV2100D', 3000, 4),
+	('1','DEV2100E', 5000, 5),
+	('1','DEV2100F', 2000, 6),
+	('1','DEV2100G', 1000, 7);
+
+INSERT INTO facture (reference,info,total,id_devis,date_crea,date_paiement)	
+    VALUES
+	('FA001', 'site internet partie 1', 1500, 1, '2023-09-01','2023-10-01'),
+	('FA002', 'site internet partie 2', 1500, 1, '2023-09-20',null),
+	('FA003', 'logiciel CRM', 5000, 2, '2024-02-01',null),
+	('FA004', 'logiciel devis', 3000, 3, '2024-03-03','2024-04-03'),
+	('FA005', 'site ecommerce', 5000, 4, '2024-04-01',null),
+	('FA006', 'logiciel ERP', 2000, 2, '2024-04-01',null);
+
+
+--Afficher les factures avec le nom client
+SELECT facture.id, facture.reference, facture.info, facture.total, client.nom FROM facture
+INNER JOIN devis
+ON facture.id_devis=devis.id
+INNER JOIN projet
+ON devis.id_projet=projet.id
+INNER JOIN client
+ON projet.id_client=client.id
+
+--Afficher le nb de factures par client
+SELECT client.nom AS Nom_Client, COUNT(facture.id) AS Nombre_Factures
+FROM client
+LEFT JOIN projet ON client.id = projet.id_client
+LEFT JOIN devis ON projet.id = devis.id_projet
+LEFT JOIN facture ON devis.id = facture.id_devis;
+--GROUP BY client.nom;
+
+--Afficher le chiffre d'affaire par client
+SELECT client.nom AS Nom_Client, SUM(facture.total) AS Chiffre_dAffaire
+FROM client
+LEFT JOIN projet ON client.id = projet.id_client
+LEFT JOIN devis ON projet.id = devis.id_projet
+LEFT JOIN facture ON devis.id = facture.id_devis
+GROUP BY client.nom;
+
+--Afficher le CA total
+SELECT SUM(total) FROM facture;
+
+--Afficher la somme des factures en attente de paiement
+SELECT SUM(total) FROM facture
+WHERE date_paiement IS NULL;
+
+--afficher les factures en retard de paiement de...
+--...30 jours max avec le nombre de jours de retard.
+SELECT facture.reference AS Reference_Facture, facture.date_crea AS Date_Creation, facture.date_paiement AS Date_Paiement,
+       DATEDIFF(NOW(), facture.date_crea) AS Jours_de_Retard
+FROM facture
+WHERE date_paiement IS NULL 
+  AND DATEDIFF(NOW(), date_crea) > 30;
+
+
